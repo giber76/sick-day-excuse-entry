@@ -29,6 +29,19 @@ function checkLine(line: string): void {
   if (line.trim().length === 0) {
     throw new Error("excuse line must not be only white space");
   }
+  // The gate counts characters, but the leaderboard sizes the entry in
+  // bytes: guard the byte length too, reject control characters that
+  // would corrupt a one-line read, and require exactly one sentence.
+  const byteLength = Buffer.byteLength(line, "utf8");
+  if (byteLength < 1 || byteLength > 200) {
+    throw new Error(`excuse line is ${byteLength} bytes, must be 1-200`);
+  }
+  if (/[\u0000-\u001f\u007f]/.test(line)) {
+    throw new Error("excuse line must contain no control characters");
+  }
+  if ((line.match(/\./g) ?? []).length !== 1 || !line.endsWith(".")) {
+    throw new Error("excuse line must be exactly one sentence ending in a period");
+  }
 }
 
 checkLine(LINE);
